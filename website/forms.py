@@ -13,3 +13,9 @@ class LoginForm(FlaskForm):
     email = EmailField('Email', validators=[DataRequired()])
     password = PasswordField('Hasło', validators=[DataRequired()])
     submit = SubmitField('Zaloguj się')
+
+class PasswordChangeForm(FlaskForm):
+    current_password = PasswordField('Obecne hasło', validators=[DataRequired(), length(min=6)])
+    new_password = PasswordField('Nowe hasło', validators=[DataRequired(), length(min=6)])
+    confirm_new_password = PasswordField('Powtórz nowe hasło', validators=[DataRequired(), length(min=6)])
+    change_password = SubmitField('Zmień hasło')

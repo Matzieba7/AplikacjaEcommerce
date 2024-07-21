@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, flash, redirect
-from .forms import LoginForm, SignUpForm
+from .forms import LoginForm, SignUpForm, PasswordChangeForm
 from .models import Customer
 from . import db
 from flask_login import login_user, login_required, logout_user
@@ -61,3 +61,33 @@ def login():
 def log_out():
     logout_user()
     return redirect('/')
+
+@auth.route('/profile/<int:customer_id>')
+@login_required
+def profile(customer_id):
+    customer = Customer.query.get(customer_id)
+    return render_template('profile.html', customer=customer)
+
+@auth.route('/change-password/<int:customer_id>', methods=['GET', 'POST'])
+@login_required
+def change_password(customer_id):
+    form = PasswordChangeForm()
+    customer = Customer.query.get(customer_id)
+    if form.validate_on_submit():
+        current_password = form.current_password.data
+        new_password = form.new_password.data
+        confirm_new_password = form.confirm_new_password.data
+
+        if customer.verify_password(current_password):
+            if new_password == confirm_new_password:
+                customer.password = confirm_new_password
+                db.session.commit()
+                flash('Hasło zaktualizowane')
+                return redirect(f'/profile/{customer.id}')
+            else:
+                flash('Hasła się nie zgadzają!')
+
+        else:
+            flash('Obecne hasło jest niepoprawne')
+
+    return render_template('change_password.html', form=form)
