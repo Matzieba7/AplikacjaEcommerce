@@ -86,7 +86,7 @@
 
               {% if current_user.is_authenticated %}
               <li><a class="dropdown-item" href="/profile/{{ current_user.id}}">Profil <i class="fa-solid fa-user"></i></a></li>
-              <li><a class="dropdown-item" href="#">Zamówienia <i class="fa-solid fa-truck-fast"></i></a></li>
+              <li><a class="dropdown-item" href="/orders">Zamówienia <i class="fa-solid fa-truck-fast"></i></a></li>
               <li><a class="dropdown-item" href="/logout">Wyloguj <i class="fa-solid fa-right-from-bracket"></i></a></li>
 
               {% else %}

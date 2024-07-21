@@ -48,25 +48,24 @@ $('.minus-cart').click(function(){
 })
 
 
-$('.remove-cart').click(function(){
-    
-    var id = $(this).attr('pid').toString()
-
-    var to_remove = this.parentNode.parentNode.parentNode.parentNode
+$('.remove-cart').click(function(event){
+    event.preventDefault();
+    var id = $(this).attr('pid').toString();
+    var to_remove = this.parentNode.parentNode.parentNode.parentNode;
 
     $.ajax({
-        type: 'GET',
+        type: 'POST',
         url: '/removecart',
         data: {
             cart_id: id
         },
-
         success: function(data){
-            document.getElementById('amount_tt').innerText = data.amount
-            document.getElementById('totalamount').innerText = data.total
-            to_remove.remove()
+            document.getElementById('amount_tt').innerText = data.amount;
+            document.getElementById('totalamount').innerText = data.total;
+            to_remove.remove();
+        },
+        error: function(xhr, status, error) {
+            console.log(xhr.responseText);
         }
-    })
-
-
-})
+    });
+});

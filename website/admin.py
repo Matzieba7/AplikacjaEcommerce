@@ -1,8 +1,9 @@
 from flask import Blueprint, render_template, flash, send_from_directory, redirect
 from flask_login import login_required, current_user
-from .forms import ShopItemsForm
+from .forms import ShopItemsForm, OrderForm
 from werkzeug.utils import secure_filename
-from .models import Product
+from .models import Product, Order, Cart
+
 from . import db
 
 
@@ -127,5 +128,38 @@ def delete_item(item_id):
             print('Produkt nie został usunięty. Błąd:', e)
             flash('Produkt nie został usunięty!!')
         return redirect('/shop-items')
+
+    return render_template('404.html')
+
+@admin.route('/view-orders')
+@login_required
+def order_view():
+    if current_user.id == 1:
+        orders = Order.query.all()
+        return render_template('view_orders.html', orders=orders)
+    return render_template('404.html')
+
+@admin.route('/update-order/<int:order_id>', methods=['GET', 'POST'])
+@login_required
+def update_order(order_id):
+    if current_user.id == 1:
+        form = OrderForm()
+
+        order = Order.query.get(order_id)
+
+        if form.validate_on_submit():
+            status = form.order_status.data
+            order.status = status
+
+            try:
+                db.session.commit()
+                flash(f'Zamówienie {order_id} zaktualizowano pomyślnie')
+                return redirect('/view-orders')
+            except Exception as e:
+                print(e)
+                flash(f'Zamówienie {order_id} nie zostało zaktualizowane')
+                return redirect('/view-orders')
+
+        return render_template('order_update.html', form=form)
 
     return render_template('404.html')

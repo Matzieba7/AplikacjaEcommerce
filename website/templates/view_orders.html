@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+
+{% block title %} Widok zamówień {% endblock %}
+
+
+{% block body %}
+
+<table class="table table-dark table-hover">
+    <thead>
+        <tr>
+
+            <th scope="col">ID zamówienia</th>
+            <th scope="col">ID płatności</th>
+
+            <th scope="col">Nazwa użytkownika</th>
+            <th scope="col">Email użytkownika</th>
+
+            <th scope="col">Nazwa produktu</th>
+            <th scope="col">Cena</th>
+            <th scope="col">Ilośc</th>
+
+            <th scope="col">Ikona</th>
+            <th scope="col">Status</th>
+            <th scope="col">Akcja</th>
+
+
+        </tr>
+    </thead>
+
+    <tbody>
+
+        {% for order in orders %}
+
+        <tr>
+            <td>{{ order.id }}</td>
+            <td>{{ order.payment_id }}</td>
+
+            <td>{{ order.customer.username }}</td>
+            <td>{{ order.customer.email }}</td>
+            <td>{{ order.product.product_name }}</td>
+            <td>{{ order.price }}</td>
+            <td>{{ order.quantity }}</td>
+
+            <td><img src="{{ order.product.product_picture }}" alt="" style="height: 50px; width: 50px; border-radius: 2px;"></td>
+
+
+            <td>{{ order.status}}</td>
+
+            <td>
+                <a href="/update-order/{{ order.id }}">Update Status</a>
+            </td>
+
+
+        </tr>
+
+        {% endfor %}
+    </tbody>
+</table>
+
+
+{% endblock %}
