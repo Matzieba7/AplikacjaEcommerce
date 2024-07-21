@@ -56,10 +56,16 @@
 
           <li class="nav-item mx-2" id="items">
 
+            {% if cart | length < 1 %}
             <a class="nav-link text-grey" href="/cart"><span class="badge bg-success"></span> Koszyk
               <i class="fa-solid fa-cart-shopping"></i>
             </a>
+            {% else %}
+            <a class="nav-link text-grey" href="/cart"><span class="badge bg-success"></span> Koszyk
+              <i class="bi bi-{{ cart | length }}-circle-fill"></i>
+            </a>
 
+            {% endif %}
 
 
           </li>
