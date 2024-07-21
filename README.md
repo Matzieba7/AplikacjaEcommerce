@@ -5,7 +5,8 @@ Ecommerce to aplikacja webowa, która umożliwia zarządzanie klientami, zamówi
 ## Instalacja
 
 # Klonowanie repozytorium:
-   git clone https://github.com/twoje_repozytorium/ecommerce.git
+
+git clone https://github.com/twoje_repozytorium/ecommerce.git
 
 Utworzenie wirtualnego środowiska (zalecane):
 
@@ -19,7 +20,7 @@ pip install -r requirements.txt
 
 python app.py
 
-# Po pierwszym uruchomieniu aplikacji zostanie automatycznie utworzona baza danych i dodany domyślny użytkownik admin z ID 1. Tylko dla tego użytkownika widoki administracyjne są dostępne.
+Po pierwszym uruchomieniu aplikacji zostanie automatycznie utworzona baza danych i dodany domyślny użytkownik admin z ID 1. Tylko dla tego użytkownika widoki administracyjne są dostępne.
 
 Logowanie jako admin:
 
