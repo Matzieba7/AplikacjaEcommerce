@@ -10,7 +10,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.min.js" ></script>
 
     <script src="https://kit.fontawesome.com/e24507d923.js" crossorigin="anonymous"></script>
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css" integrity="sha512-dPXYcDub/aeb08c63jRq/k6GaKccl256JQy/AnOq7CAnEZ9FzSL9wSbcZkMp4R26vBsMLFYH4kQ67/bbV8XaCQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
     <!-- Dodanie plików css z projektu -->
@@ -18,7 +17,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
-    <title>Aplikacja e-commerce</title>
+    <title>Aplikacja ecommerce | {% block title %} {% endblock %}</title>
 </head>
 <body style="background-color: rgb(245, 245, 220);">
 
@@ -34,7 +33,7 @@
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
           <ul class="navbar-nav me-auto mb-2 mb-lg-0">
             <li class="nav-item">
-              <a class="nav-link active" aria-current="page" href="/" style="font-family: cursive; font-size: 19px;">E-commerce</a>
+              <a class="nav-link active" aria-current="page" href="/" style="font-family: cursive; font-size: 19px;">Ecommerce</a>
             </li>
 
             <li class="nav-item">
@@ -79,14 +78,15 @@
             </a>
             <ul class="dropdown-menu" aria-labelledby="profileDropdown">
 
-
+              {% if current_user.is_authenticated %}
               <li><a class="dropdown-item" href="#">Profil <i class="fa-solid fa-user"></i></a></li>
               <li><a class="dropdown-item" href="#">Zamówienia <i class="fa-solid fa-truck-fast"></i></a></li>
-              <li><a class="dropdown-item" href="#">Wyloguj <i class="fa-solid fa-right-from-bracket"></i></a></li>
+              <li><a class="dropdown-item" href="/logout">Wyloguj <i class="fa-solid fa-right-from-bracket"></i></a></li>
 
-              <li><a class="dropdown-item" href="#">Zaloguj <i class="fa-solid fa-right-to-bracket"></i></a></li>
+              {% else %}
+              <li><a class="dropdown-item" href="/login">Zaloguj <i class="fa-solid fa-right-to-bracket"></i></a></li>
 
-
+              {% endif %}
             </ul>
 
           </li>
@@ -108,16 +108,21 @@
 
     {% block body %}
 
+
     {% endblock %}
 
     <footer class="container-fluid  text-center p-2 mt-5" style="background-color: green; color: white;">
-      <a href="https://github.com/Frost-Codes" style="color: white;">E-commerce</a> | <span>
-        <i class="fa-sharp fa-regular fa-copyright"></i></span> 2024 Wszystkie prawa zastrzeżone - Mateusz Zięba 13388
+      <a href="https://github.com/Frost-Codes" style="color: white;">Ecommerce</a> | <span>
+        <i class="fa-sharp fa-regular fa-copyright"></i></span> 2024 Wszystkie prawa zastrzeżone Mateusz Zięba 13388
 
     </footer>
 
     <script src="{{ url_for( 'static', filename='js/owl.carousel.min.js') }}"></script>
     <script src="{{ url_for( 'static', filename='js/all.min.js') }}"></script>
     <script src="{{ url_for( 'static', filename='js/jquery.js') }}"></script>
+    <script src="{{ url_for( 'static', filename='js/myScript.js') }}"></script>
+
+</body>
+
 </body>
 </html>

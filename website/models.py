@@ -10,6 +10,9 @@ class Customer(db.Model, UserMixin):
     password_hash = db.Column(db.String(150))
     date_joined = db.Column(db.DateTime(), default=datetime.now())
 
+    cart_items = db.relationship('Cart', backref=db.backref('customer', lazy=True))
+    orders = db.relationship('Order', backref=db.backref('customer', lazy=True))
+
     @property
     def password(self):
         raise AttributeError('Hasło nie jest atrybutem do odczytu')
@@ -34,6 +37,9 @@ class Product(db.Model):
     flash_sale = db.Column(db.Boolean, default=False)
     date_added = db.Column(db.DateTime, default=datetime.now())
 
+    carts = db.relationship('Cart', backref=db.backref('product', lazy=True))
+    orders = db.relationship('Order', backref=db.backref('product', lazy=True))
+
     def __str__(self):
         return '<Product %r>' % self.product_name
 
@@ -42,8 +48,13 @@ class Cart(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     quantity = db.Column(db.Integer, nullable=False)
 
+    customer_link = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
+    product_link = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
+
     def __str__(self):
         return '<Koszyk %r>' % self.id
+
+
 
 class Order(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -51,6 +62,9 @@ class Order(db.Model):
     price = db.Column(db.Float, nullable=False)
     status = db.Column(db.String(100), nullable=False)
     payment_id = db.Column(db.String(1000), nullable=False)
+
+    customer_link = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
+    product_link = db.Column(db.Integer, db.ForeignKey('product.id'), nullable=False)
 
     def __str__(self):
         return '<Zamówienie %r>' % self.id
