@@ -3,7 +3,8 @@ from .models import Product
 from flask_login import login_required, current_user
 from .models import Cart, Order
 from . import db
-from intasend import APIService
+from flask import make_response
+import xml.etree.ElementTree as ET
 
 views = Blueprint('views', __name__)
 
@@ -176,4 +177,29 @@ def order():
     return render_template('orders.html', orders=orders)
 
 
+@views.route('/export-orders')
+@login_required
+def export_orders():
+    orders = Order.query.filter_by(customer_link=current_user.id).all()
 
+    root = ET.Element("Orders")
+
+    for order in orders:
+        order_elem = ET.SubElement(root, "Order")
+        product_name = ET.SubElement(order_elem, "ProductName")
+        product_name.text = order.product.product_name
+        quantity = ET.SubElement(order_elem, "Quantity")
+        quantity.text = str(order.quantity)
+        price = ET.SubElement(order_elem, "Price")
+        price.text = str(order.price)
+        status = ET.SubElement(order_elem, "Status")
+        status.text = order.status
+
+    tree = ET.ElementTree(root)
+    xml_data = ET.tostring(root, encoding='utf-8', method='xml')
+
+    response = make_response(xml_data)
+    response.headers['Content-Type'] = 'application/xml'
+    response.headers['Content-Disposition'] = 'attachment; filename=orders.xml'
+
+    return response
