@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %} Produkty {% endblock %}
+
+
+{% block body %}
+
+{% if items | length < 1 %}
+<h3 style="color: white;">Brak produktów</h3>
+
+{% else %}
+
+<table class="table table-dark table-hover">
+    <thead>
+        <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Data dodania</th>
+            <th scope="col">Nazwa</th>
+            <th scope="col">Stara cena</th>
+            <th scope="col">Obecna cena</th>
+            <th scope="col">Na stanie</th>
+            <th scope="col">Ikona</th>
+            <th scope="col">Wyprzedaż</th>
+            <th scope="col">Akcja</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for item in items %}
+
+        <tr>
+            <th scope="row">{{ item.id }}</th>
+            <td>{{ item.date_added }}</td>
+            <td>{{ item.product_name }}</td>
+            <td>{{ item.previous_price }}</td>
+            <td>{{ item.current_price }}</td>
+            <td>{{ item.in_stock }}</td>
+            <td><img src="{{ item.product_picture }}" alt="" style="height: 50px; width: 50px; border-radius: 2px;"></td>
+            <td>{{ item.flash_sale }}</td>
+
+
+            <td>
+                <a href="/update-item/{{ item.id }}">Zaktualizuj</a>
+                <br>
+                <a href="/delete-item/{{ item.id }}">Usuń</a>
+            </td>
+
+        </tr>
+
+
+        {% endfor %}
+    </tbody>
+</table>
+
+
+{% endif %}
+
+
+{% endblock %}

@@ -1,6 +1,7 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, FloatField, PasswordField, EmailField, BooleanField, SubmitField
 from wtforms.validators import DataRequired, length, NumberRange
+from flask_wtf.file import FileField, FileRequired
 
 class SignUpForm(FlaskForm):
     email = EmailField('Email', validators=[DataRequired()])
@@ -19,3 +20,14 @@ class PasswordChangeForm(FlaskForm):
     new_password = PasswordField('Nowe hasło', validators=[DataRequired(), length(min=6)])
     confirm_new_password = PasswordField('Powtórz nowe hasło', validators=[DataRequired(), length(min=6)])
     change_password = SubmitField('Zmień hasło')
+
+class ShopItemsForm(FlaskForm):
+    product_name = StringField('Produkt', validators=[DataRequired()])
+    current_price = FloatField('Obecna cena', validators=[DataRequired()])
+    previous_price = FloatField('Stara cenaP', validators=[DataRequired()])
+    in_stock = IntegerField('Na stanie', validators=[DataRequired(), NumberRange(min=0)])
+    product_picture = FileField('Ikona', validators=[DataRequired()])
+    flash_sale = BooleanField('Wyprzedaże')
+
+    add_product = SubmitField('Dodaj')
+    update_product = SubmitField('Zaktualizuj')
