@@ -31,7 +31,7 @@ def create_default_admin():
         admin_user = Customer(
             email='admin@gmail.com',
             username='admin',
-            password=generate_password_hash('Admin1234')
+            password='Admin1234'
         )
         db.session.add(admin_user)
         db.session.commit()
@@ -48,6 +48,8 @@ def create_app():
     app.config['SECRET_KEY'] = 'poqwe qwcelqwkcelwqkmc qwek'
 
     db_path = os.path.join(app.instance_path, DB_NAME)
+    if not os.path.exists(app.instance_path):
+        os.makedirs(app.instance_path)  # Tworzy katalog dla pliku bazy danych
     app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 
     db.init_app(app)
@@ -71,6 +73,7 @@ def create_app():
         Returns:
             Customer: Obiekt użytkownika.
         """
+        from .models import Customer
         return Customer.query.get(int(user_id))
 
     from .views import views
@@ -86,6 +89,7 @@ def create_app():
         create_database(app)
 
     return app
+
 
 def ensure_db_writable(db_path):
     """
