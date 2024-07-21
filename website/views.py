@@ -1,45 +1,56 @@
-from flask import Blueprint, render_template, flash, redirect, request, jsonify
-from .models import Product
+from flask import Blueprint, render_template, flash, redirect, request, jsonify, make_response
+from .models import Product, Cart, Order
 from flask_login import login_required, current_user
-from .models import Cart, Order
 from . import db
-from flask import make_response
 import xml.etree.ElementTree as ET
 
 views = Blueprint('views', __name__)
 
 API_PUBLISHABLE_KEY = 'ISPubKey_test_ca0331cb-8a01-4510-a711-e2260071ccb8'
-
 API_TOKEN = 'ISSecretKey_test_c6f63b6f-06f6-441d-b5f0-dec432e2a0bd'
 
 @views.route('/')
 def home():
+    """
+    Widok głównej strony aplikacji.
 
+    Returns:
+        Renderowanie szablonu głównej strony z produktami na wyprzedaży oraz koszykiem użytkownika.
+    """
     items = Product.query.filter_by(flash_sale=True)
-
-    return render_template('home.html', items=items, cart=Cart.query.filter_by(customer_link=current_user.id).all()
-    if current_user.is_authenticated else [])
+    cart_items = Cart.query.filter_by(customer_link=current_user.id).all() if current_user.is_authenticated else []
+    return render_template('home.html', items=items, cart=cart_items)
 
 @views.route('/add-to-cart/<int:item_id>')
 @login_required
 def add_to_cart(item_id):
+    """
+    Dodanie produktu do koszyka.
+
+    Args:
+        item_id (int): ID produktu do dodania.
+
+    Returns:
+        Przekierowanie do poprzedniej strony.
+    """
     item_to_add = Product.query.get(item_id)
     item_exists = Cart.query.filter_by(product_link=item_id, customer_link=current_user.id).first()
+
     if item_exists:
         try:
-            item_exists.quantity = item_exists.quantity + 1
+            item_exists.quantity += 1
             db.session.commit()
-            flash(f' Ilość produktu: { item_exists.product.product_name } została zaktualizowana')
-            return redirect(request.referrer)
+            flash(f'Ilość produktu: {item_exists.product.product_name} została zaktualizowana')
         except Exception as e:
             print('Ilość produktu nie została zaktualizowana', e)
-            flash(f'Ilość produktu: { item_exists.product.product_name } nie została zaktualizowana')
-            return redirect(request.referrer)
+            flash(f'Ilość produktu: {item_exists.product.product_name} nie została zaktualizowana')
+        return redirect(request.referrer)
 
-    new_cart_item = Cart()
-    new_cart_item.quantity = 1
-    new_cart_item.product_link = item_to_add.id
-    new_cart_item.customer_link = current_user.id
+    new_cart_item = Cart(
+        quantity=1,
+        product_link=item_to_add.id,
+        customer_link=current_user.id
+    )
 
     try:
         db.session.add(new_cart_item)
@@ -54,28 +65,33 @@ def add_to_cart(item_id):
 @views.route('/cart')
 @login_required
 def show_cart():
-    cart = Cart.query.filter_by(customer_link=current_user.id).all()
-    amount = 0
-    for item in cart:
-        amount += item.product.current_price * item.quantity
+    """
+    Wyświetlanie koszyka użytkownika.
 
-    return render_template('cart.html', cart=cart, amount=amount, total=amount+200)
+    Returns:
+        Renderowanie szablonu koszyka.
+    """
+    cart = Cart.query.filter_by(customer_link=current_user.id).all()
+    amount = sum(item.product.current_price * item.quantity for item in cart)
+    return render_template('cart.html', cart=cart, amount=amount, total=amount + 200)
 
 @views.route('/pluscart')
 @login_required
 def plus_cart():
+    """
+    Zwiększenie ilości produktu w koszyku.
+
+    Returns:
+        json: Zaktualizowane dane koszyka.
+    """
     if request.method == 'GET':
         cart_id = request.args.get('cart_id')
         cart_item = Cart.query.get(cart_id)
-        cart_item.quantity = cart_item.quantity + 1
+        cart_item.quantity += 1
         db.session.commit()
 
         cart = Cart.query.filter_by(customer_link=current_user.id).all()
-
-        amount = 0
-
-        for item in cart:
-            amount += item.product.current_price * item.quantity
+        amount = sum(item.product.current_price * item.quantity for item in cart)
 
         data = {
             'quantity': cart_item.quantity,
@@ -84,23 +100,24 @@ def plus_cart():
         }
 
         return jsonify(data)
-
 
 @views.route('/minuscart')
 @login_required
 def minus_cart():
+    """
+    Zmniejszenie ilości produktu w koszyku.
+
+    Returns:
+        json: Zaktualizowane dane koszyka.
+    """
     if request.method == 'GET':
         cart_id = request.args.get('cart_id')
         cart_item = Cart.query.get(cart_id)
-        cart_item.quantity = cart_item.quantity - 1
+        cart_item.quantity -= 1
         db.session.commit()
 
         cart = Cart.query.filter_by(customer_link=current_user.id).all()
-
-        amount = 0
-
-        for item in cart:
-            amount += item.product.current_price * item.quantity
+        amount = sum(item.product.current_price * item.quantity for item in cart)
 
         data = {
             'quantity': cart_item.quantity,
@@ -110,12 +127,18 @@ def minus_cart():
 
         return jsonify(data)
 
-
 @views.route('/removecart', methods=['POST'])
 @login_required
 def remove_cart():
+    """
+    Usunięcie produktu z koszyka.
+
+    Returns:
+        json: Zaktualizowane dane koszyka lub błąd.
+    """
     cart_id = request.form.get('cart_id')
     cart_item = Cart.query.get(cart_id)
+
     if cart_item:
         db.session.delete(cart_item)
         db.session.commit()
@@ -129,28 +152,33 @@ def remove_cart():
         }
 
         return jsonify(data)
+
     return jsonify({'error': 'Item not found'}), 404
 
 @views.route('/place-order', methods=['POST'])
 @login_required
 def place_order():
+    """
+    Złożenie zamówienia.
+
+    Returns:
+        Przekierowanie do strony zamówień lub głównej z odpowiednim komunikatem.
+    """
     customer_cart = Cart.query.filter_by(customer_link=current_user.id).all()
     if customer_cart:
         try:
             total = sum(item.product.current_price * item.quantity for item in customer_cart)
-
             order_status = "W trakcie"
 
             for item in customer_cart:
-                new_order = Order()
-                new_order.quantity = item.quantity
-                new_order.price = item.product.current_price
-                new_order.status = order_status
-                new_order.payment_id = ""
-
-                new_order.product_link = item.product_link
-                new_order.customer_link = item.customer_link
-
+                new_order = Order(
+                    quantity=item.quantity,
+                    price=item.product.current_price,
+                    status=order_status,
+                    payment_id="",
+                    product_link=item.product_link,
+                    customer_link=item.customer_link
+                )
                 db.session.add(new_order)
 
                 product = Product.query.get(item.product_link)
@@ -159,7 +187,6 @@ def place_order():
                 db.session.delete(item)
 
             db.session.commit()
-
             flash('Zamówienie złożone poprawnie')
             return redirect('/orders')
         except Exception as e:
@@ -173,15 +200,25 @@ def place_order():
 @views.route('/orders')
 @login_required
 def order():
+    """
+    Wyświetlanie zamówień użytkownika.
+
+    Returns:
+        Renderowanie szablonu zamówień.
+    """
     orders = Order.query.filter_by(customer_link=current_user.id).all()
     return render_template('orders.html', orders=orders)
-
 
 @views.route('/export-orders')
 @login_required
 def export_orders():
-    orders = Order.query.filter_by(customer_link=current_user.id).all()
+    """
+    Eksportowanie zamówień użytkownika do pliku XML.
 
+    Returns:
+        response: Plik XML z zamówieniami użytkownika.
+    """
+    orders = Order.query.filter_by(customer_link=current_user.id).all()
     root = ET.Element("Orders")
 
     for order in orders:
